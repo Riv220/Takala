@@ -1,97 +1,131 @@
 import streamlit as st
 import requests
 
-# הגדרות עיצוב
-st.set_page_config(page_title="ניהול תקלות", page_icon="🔧", layout="centered")
+# --- הגדרת עמוד בסיסית ---
+st.set_page_config(page_title="ניהול תקלות", page_icon="🍏", layout="centered")
 
-# --- חלק חדש: סרגל צד עם פרטי קשר ---
-with st.sidebar:
-    st.header("📞 יצירת קשר מיידי")
-    st.write("נתקלת בבעיה דחופה? אני זמין!")
+# --- עיצוב מותאם אישית (CSS) לירוק ולבן + עברית ---
+st.markdown("""
+    <style>
+    /* כיוון טקסט מימין לשמאל */
+    .stApp {
+        direction: rtl;
+        text-align: right;
+    }
     
-    # כפתור חיוג (שים לב: עובד בעיקר מהטלפון)
-    st.link_button("התקשר לאדמין 📞", "tel:+972546258744") # <--- שנה את המספר כאן
+    /* צביעת כפתורים בירוק */
+    div.stButton > button {
+        background-color: #28a745;
+        color: white;
+        border-radius: 10px;
+        border: none;
+        padding: 10px 20px;
+        font-size: 18px;
+        font-weight: bold;
+        width: 100%;
+    }
+    div.stButton > button:hover {
+        background-color: #218838;
+        color: white;
+    }
+
+    /* עיצוב כותרות הטאבים */
+    button[data-baseweb="tab"] {
+        font-size: 18px;
+        font-weight: bold;
+    }
     
-    # כפתור וואטסאפ (אופציונלי)
-    st.link_button("שלח הודעה בוואטסאפ 💬", "https://wa.me/972501234567") # <--- שנה את המספר כאן
-    
-    st.divider()
-    st.write("שעות פעילות: 08:00 - 17:00")
+    /* הסתרת התפריט של סטרימליט בצד למראה נקי */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
 
-# --- סוף סרגל צד ---
-
-# כותרת האפליקציה
-st.title("🔧 מערכת ניהול תקלות")
-
-# הלינק שלך (וודא שהוא נכון!)
+# --- משתנים גלובליים ---
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 
-with st.form("ticket_form", clear_on_submit=True):
+# --- סרגל צד (תפריט המבורגר בטלפון) ---
+with st.sidebar:
+    st.image("https://cdn-icons-png.flaticon.com/512/2921/2921226.png", width=100) # אייקון נחמד
+    st.title("מרכז תמיכה")
+    st.info("אני זמין לכל בעיה דחופה!")
     
-    # 1. בחירת פעולה
-    st.subheader("מה ברצונך לבצע?")
-    action_type = st.radio(
-        "בחר פעולה:",
-        ["פתיחת קריאה חדשה 🔴", "סגירת קריאה (טופל) 🟢"],
-        horizontal=True
-    )
-    
-    st.divider()
+    # כפתורים ליצירת קשר
+    st.link_button("📞 חייג לאדמין", "tel:+972546258744") 
+    st.link_button("💬 שלח וואטסאפ", "https://wa.me/972546258744")
 
-    # 2. מספר חדר - רלוונטי תמיד
-    room_number = st.text_input("מספר חדר (לדוגמה: 102)")
+# --- כותרת ראשית ---
+st.markdown("<h1 style='text-align: center; color: #28a745;'>מערכת ניהול תקלות 🍏</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: gray;'>דיווח וטיפול מהיר בתקלות כיתה</p>", unsafe_allow_html=True)
 
-    # משתנים שנמלא רק אם זו פתיחת תקלה
-    issue_type = "סגירת קריאה"
-    notes = ""
+# --- יצירת טאבים לניווט קל בטלפון ---
+tab1, tab2 = st.tabs(["📝 פתיחת תקלה חדשה", "✅ סגירת תקלה (טופל)"])
 
-    # 3. שדות שמופיעים רק בפתיחת קריאה
-    if "פתיחת" in action_type:
+# === טאב 1: פתיחת תקלה ===
+with tab1:
+    st.success("דיווח תקלה חדשה")
+    with st.form("open_ticket_form", clear_on_submit=True):
+        room_number = st.number_input("מספר חדר", min_value=1, step=1, placeholder="הקלד מספר חדר...")
+        
         issue_type = st.selectbox(
-            "סוג התקלה:",
-            [
-                "אין אינטרנט",
-                "רמקול תקול",
-                "חסר כבל HDMI",
-                "מקרן לא עובד",
-                "בעיה במחשב",
-                "אחר"
-            ]
+            "מה הבעיה?",
+            ["אין אינטרנט", "רמקול תקול", "חסר כבל HDMI", "מקרן לא עובד", "בעיה במחשב", "מזגן לא עובד", "אחר"]
         )
-        notes = st.text_area("הערות נוספות (אופציונלי)")
+        
+        notes = st.text_area("הערות נוספות (לא חובה)")
+        
+        # כפתור שליחה ירוק וגדול
+        submit_open = st.form_submit_button("שלח דיווח 🚀")
+        
+        if submit_open:
+            if not room_number:
+                st.error("⚠️ חובה להזין מספר חדר")
+            else:
+                data = {
+                    "פעולה": "פתח",
+                    "מספר חדר": room_number,
+                    "סוג תקלה": issue_type,
+                    "הערות": notes
+                }
+                try:
+                    with st.spinner('שולח דיווח...'):
+                        res = requests.post(URL, params=data)
+                    if res.status_code == 200:
+                        st.balloons()
+                        st.success("הדיווח נשלח בהצלחה! האדמין בדרך.")
+                except:
+                    st.error("שגיאת תקשורת")
 
-    # כפתור שליחה
-    submitted = st.form_submit_button("בצע פעולה ✅")
-
-    if submitted:
-        if not room_number:
-            st.error("חובה להזין מספר חדר!")
-        else:
-            action_code = "סגור" if "סגירת" in action_type else "פתח"
-
-            data = {
-                "פעולה": action_code,
-                "מספר חדר": room_number,
-                "סוג תקלה": issue_type,
-                "הערות": notes
-            }
-            
-            try:
-                with st.spinner('מתקשר עם השרת...'):
-                    response = requests.post(URL, params=data)
-                
-                if response.status_code == 200:
-                    result_json = response.json()
+# === טאב 2: סגירת תקלה ===
+with tab2:
+    st.info("סגירת קריאה קיימת")
+    with st.form("close_ticket_form", clear_on_submit=True):
+        st.write("סיימת לטפל בחדר? הזן את המספר וסגור את הקריאה.")
+        
+        close_room = st.number_input("מספר חדר לסגירה", min_value=1, step=1, key="close_room")
+        
+        submit_close = st.form_submit_button("סמן כ-טופל ✅")
+        
+        if submit_close:
+            if not close_room:
+                st.error("⚠️ איזה חדר לסגור?")
+            else:
+                data = {
+                    "פעולה": "סגור",
+                    "מספר חדר": close_room,
+                    "סוג תקלה": "סגירה",
+                    "הערות": ""
+                }
+                try:
+                    with st.spinner('מעדכן סטטוס...'):
+                        res = requests.post(URL, params=data)
+                        response_data = res.json()
                     
-                    if result_json.get('result') == 'success':
-                        if action_code == "סגור":
-                            st.success(result_json.get('message'))
-                        else:
-                            st.success("הקריאה נפתחה בהצלחה! 🔴")
+                    if response_data.get('result') == 'success':
+                        st.success(f"חדר {close_room}: {response_data.get('message')}")
                         st.balloons()
                     else:
-                        st.warning(result_json.get('message', 'שגיאה לא ידועה'))
-                else:
-                    st.error("היתה בעיה בשליחה, נסה שוב.")
-            except Exception as e:
-                st.error(f"שגיאת תקשורת: {e}")
+                        st.warning("לא נמצאה קריאה פתוחה בחדר הזה.")
+                except:
+                    st.error("שגיאת תקשורת")
