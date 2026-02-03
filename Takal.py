@@ -87,7 +87,7 @@ with tab1:
                         res = requests.post(URL, params=data)
                     if res.status_code == 200:
                         st.balloons()
-                        st.success("נשלח בהצלחה! האדמין בדרך.")
+                        st.success("נשלח בהצלחה! רומן בדרך.")
                 except:
                     st.error("שגיאת תקשורת")
 
