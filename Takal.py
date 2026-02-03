@@ -9,8 +9,7 @@ st.title("🔧 דיווח תקלה טכנית")
 st.write("אנא מלא את פרטי התקלה כדי שהאדמין יקבל התראה מיידית.")
 
 # כתובת הסקריפט של גוגל (הדבק כאן את הלינק שיצרנו בשלב ה-Google Sheets)
-URL = "YOUR_WEB_APP_URL_HERE"  # <--- תדביק את הלינק פה
-
+URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 # טופס הדיווח
 with st.form("ticket_form", clear_on_submit=True):
     # בחירת סוג התקלה
