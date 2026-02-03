@@ -17,13 +17,10 @@ st.markdown("""
         text-align: right;
     }
 
-    /* 3. העלמה אגרסיבית של כפתורי הפלוס והמינוס */
-    /* זה משפיע על כל שדות המספרים באפליקציה */
+    /* 3. העלמה של כפתורי הפלוס והמינוס (כדי שזה ייראה נקי) */
     [data-testid="stNumberInputStepDown"],
     [data-testid="stNumberInputStepUp"] {
         display: none !important;
-        visibility: hidden !important;
-        width: 0px !important;
     }
     
     /* 4. עיצוב כפתורים ירוקים */
@@ -65,10 +62,9 @@ with tab1:
     st.markdown("##### 📌 דיווח חדש")
     with st.form("open_ticket_form", clear_on_submit=True):
         
-        # שימוש ב-number_input (כדי לקבל מקלדת מספרים) 
-        # אבל עם step=1 כדי שזה יהיה מספר שלם (INT)
-        # ה-CSS למעלה מעלים את הכפתורים
-        room_number = st.number_input("מספר חדר", min_value=0, step=1, value=0)
+        # השינוי הגדול: value=None משאיר את השדה ריק!
+        # step=1 מבטיח מספרים שלמים ומקלדת מספרים
+        room_number = st.number_input("מספר חדר", min_value=0, step=1, value=None, placeholder="הקלד מספר חדר...")
         
         issue_type = st.selectbox(
             "מה הבעיה?",
@@ -81,8 +77,9 @@ with tab1:
         submit_open = st.form_submit_button("שלח דיווח 🚀")
         
         if submit_open:
-            if room_number == 0:
-                st.error("⚠️ חובה להזין מספר חדר תקין")
+            # בדיקה אם השדה ריק (None)
+            if room_number is None:
+                st.error("⚠️ חובה להזין מספר חדר")
             else:
                 data = {"פעולה": "פתח", "מספר חדר": room_number, "סוג תקלה": issue_type, "הערות": notes}
                 try:
@@ -99,14 +96,14 @@ with tab2:
     st.markdown("##### ✅ סגירת קריאה")
     with st.form("close_ticket_form", clear_on_submit=True):
         
-        # אותו דבר כאן - מספר שלם בלבד
-        close_room = st.number_input("איזה חדר טופל?", min_value=0, step=1, key="close_room", value=0)
+        # גם כאן: מתחיל ריק (None)
+        close_room = st.number_input("איזה חדר טופל?", min_value=0, step=1, value=None, placeholder="הקלד מספר חדר...", key="close_room")
         
         st.write("")
         submit_close = st.form_submit_button("עדכן שטופל 👍")
         
         if submit_close:
-            if close_room == 0:
+            if close_room is None:
                 st.error("⚠️ איזה חדר?")
             else:
                 data = {"פעולה": "סגור", "מספר חדר": close_room, "סוג תקלה": "סגירה", "הערות": ""}
