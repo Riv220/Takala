@@ -4,10 +4,10 @@ import requests
 # --- הגדרת עמוד ---
 st.set_page_config(page_title="ניהול תקלות", page_icon="🍏", layout="centered", initial_sidebar_state="collapsed")
 
-# --- עיצוב מותאם (CSS) נקי למובייל ---
+# --- עיצוב מותאם (CSS) ---
 st.markdown("""
     <style>
-    /* 1. הסתרת התפריט העליון והסרגל הצידי */
+    /* 1. הסתרת התפריטים */
     [data-testid="stSidebar"] { display: none; }
     #MainMenu { visibility: hidden; }
     
@@ -16,17 +16,17 @@ st.markdown("""
         direction: rtl;
         text-align: right;
     }
-    
-    /* 3. טריק להעלמת כפתורי הפלוס/מינוס בשדה המספרי */
-    button[step="-1"], button[step="1"] {
-        display: none;
-    }
-    div[data-testid="stNumberInput"] div[data-testid="stNumberInputStepUp"],
-    div[data-testid="stNumberInput"] div[data-testid="stNumberInputStepDown"] {
-        display: none;
-    }
 
-    /* 4. עיצוב כפתורים בירוק */
+    /* 3. העלמה אגרסיבית של כפתורי הפלוס והמינוס */
+    /* זה משפיע על כל שדות המספרים באפליקציה */
+    [data-testid="stNumberInputStepDown"],
+    [data-testid="stNumberInputStepUp"] {
+        display: none !important;
+        visibility: hidden !important;
+        width: 0px !important;
+    }
+    
+    /* 4. עיצוב כפתורים ירוקים */
     div.stButton > button {
         background-color: #28a745;
         color: white;
@@ -42,8 +42,8 @@ st.markdown("""
         background-color: #218838;
         color: white;
     }
-    
-    /* 5. רווחים מותאמים לטלפון */
+
+    /* 5. ריווח */
     .block-container {
         padding-top: 2rem;
         padding-bottom: 5rem;
@@ -54,7 +54,7 @@ st.markdown("""
 # --- משתנים ---
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 
-# --- כותרת ראשית ---
+# --- כותרת ---
 st.markdown("<h1 style='text-align: center; color: #28a745;'>מערכת ניהול תקלות 🍏</h1>", unsafe_allow_html=True)
 
 # --- טאבים ---
@@ -65,8 +65,9 @@ with tab1:
     st.markdown("##### 📌 דיווח חדש")
     with st.form("open_ticket_form", clear_on_submit=True):
         
-        # שינוי: חזרנו ל-number_input כדי לקבל מקלדת מספרים, אבל הסתרנו את הכפתורים ב-CSS
-        # step=1 מבטיח שאלו רק מספרים שלמים (INT)
+        # שימוש ב-number_input (כדי לקבל מקלדת מספרים) 
+        # אבל עם step=1 כדי שזה יהיה מספר שלם (INT)
+        # ה-CSS למעלה מעלים את הכפתורים
         room_number = st.number_input("מספר חדר", min_value=0, step=1, value=0)
         
         issue_type = st.selectbox(
@@ -98,7 +99,7 @@ with tab2:
     st.markdown("##### ✅ סגירת קריאה")
     with st.form("close_ticket_form", clear_on_submit=True):
         
-        # גם כאן: רק מספרים
+        # אותו דבר כאן - מספר שלם בלבד
         close_room = st.number_input("איזה חדר טופל?", min_value=0, step=1, key="close_room", value=0)
         
         st.write("")
@@ -124,13 +125,10 @@ with tab2:
 
 st.divider()
 
-# --- חלק תחתון: כפתורים גדולים ליצירת קשר ---
+# --- כפתורי קשר ---
 st.markdown("<h4 style='text-align: center; margin-bottom: 10px;'>📞 יצירת קשר מהיר</h4>", unsafe_allow_html=True)
-
 col1, col2 = st.columns(2)
-
 with col1:
     st.link_button("חייג 📞", "tel:+972546258744", use_container_width=True)
-
 with col2:
     st.link_button("וואטסאפ 💬", "https://wa.me/972546258744", use_container_width=True)
