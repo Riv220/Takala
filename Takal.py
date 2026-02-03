@@ -2,27 +2,22 @@ import streamlit as st
 import requests
 
 # --- הגדרת עמוד ---
-# initial_sidebar_state="collapsed" -> מתחיל כשהתפריט סגור
 st.set_page_config(page_title="ניהול תקלות", page_icon="🍏", layout="centered", initial_sidebar_state="collapsed")
 
 # --- עיצוב מותאם (CSS) נקי למובייל ---
 st.markdown("""
     <style>
-    /* 1. הסתרת התפריט העליון והסרגל הצידי לגמרי */
-    [data-testid="stSidebar"] {
-        display: none;
-    }
-    #MainMenu {
-        visibility: hidden;
-    }
+    /* 1. הסתרת התפריט העליון והסרגל הצידי */
+    [data-testid="stSidebar"] { display: none; }
+    #MainMenu { visibility: hidden; }
     
-    /* 2. כיוון טקסט מימין לשמאל (חשוב לעברית) */
+    /* 2. כיוון טקסט מימין לשמאל */
     .stApp {
         direction: rtl;
         text-align: right;
     }
     
-    /* 3. עיצוב כפתורים בירוק "זוהר" שיראה טוב על שחור */
+    /* 3. עיצוב כפתורים בירוק */
     div.stButton > button {
         background-color: #28a745;
         color: white;
@@ -32,14 +27,14 @@ st.markdown("""
         font-size: 18px;
         font-weight: bold;
         width: 100%;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.3); /* צל קטן לכפתור */
+        box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
     }
     div.stButton > button:hover {
         background-color: #218838;
         color: white;
     }
     
-    /* 4. הקטנת הרווח הלבן למעלה כדי שלא יתפוס מקום סתם בטלפון */
+    /* 4. רווחים מותאמים לטלפון */
     .block-container {
         padding-top: 2rem;
         padding-bottom: 5rem;
@@ -54,14 +49,15 @@ URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45
 # --- כותרת ראשית ---
 st.markdown("<h1 style='text-align: center; color: #28a745;'>מערכת ניהול תקלות 🍏</h1>", unsafe_allow_html=True)
 
-# --- טאבים (פתיחה / סגירה) ---
+# --- טאבים ---
 tab1, tab2 = st.tabs(["📝 פתיחת תקלה", "✅ סגירה (טופל)"])
 
 # === טאב 1: פתיחת תקלה ===
 with tab1:
     st.markdown("##### 📌 דיווח חדש")
     with st.form("open_ticket_form", clear_on_submit=True):
-        room_number = st.number_input("מספר חדר", min_value=1, step=1)
+        # שינוי: תיבת טקסט רגילה במקום מספרים עם פלוס/מינוס
+        room_number = st.text_input("מספר חדר")
         
         issue_type = st.selectbox(
             "מה הבעיה?",
@@ -70,7 +66,6 @@ with tab1:
         
         notes = st.text_area("הערות (לא חובה)")
         
-        # רווח קטן לפני הכפתור
         st.write("")
         submit_open = st.form_submit_button("שלח דיווח 🚀")
         
@@ -92,9 +87,9 @@ with tab1:
 with tab2:
     st.markdown("##### ✅ סגירת קריאה")
     with st.form("close_ticket_form", clear_on_submit=True):
-        close_room = st.number_input("איזה חדר טופל?", min_value=1, step=1, key="close_room")
+        # שינוי: תיבת טקסט רגילה
+        close_room = st.text_input("איזה חדר טופל?", key="close_room")
         
-        # רווח קטן לפני הכפתור
         st.write("")
         submit_close = st.form_submit_button("עדכן שטופל 👍")
         
@@ -124,7 +119,9 @@ st.markdown("<h4 style='text-align: center; margin-bottom: 10px;'>📞 יציר�
 col1, col2 = st.columns(2)
 
 with col1:
-    st.link_button("חייג 📞", "tel:+972501234567", use_container_width=True)
+    # כאן עודכן המספר שלך
+    st.link_button("חייג 📞", "tel:+972546258744", use_container_width=True)
 
 with col2:
-    st.link_button("וואטסאפ 💬", "https://wa.me/972501234567", use_container_width=True)
+    # כאן עודכן המספר שלך
+    st.link_button("וואטסאפ 💬", "https://wa.me/972546258744", use_container_width=True)
