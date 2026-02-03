@@ -17,7 +17,16 @@ st.markdown("""
         text-align: right;
     }
     
-    /* 3. עיצוב כפתורים בירוק */
+    /* 3. טריק להעלמת כפתורי הפלוס/מינוס בשדה המספרי */
+    button[step="-1"], button[step="1"] {
+        display: none;
+    }
+    div[data-testid="stNumberInput"] div[data-testid="stNumberInputStepUp"],
+    div[data-testid="stNumberInput"] div[data-testid="stNumberInputStepDown"] {
+        display: none;
+    }
+
+    /* 4. עיצוב כפתורים בירוק */
     div.stButton > button {
         background-color: #28a745;
         color: white;
@@ -34,7 +43,7 @@ st.markdown("""
         color: white;
     }
     
-    /* 4. רווחים מותאמים לטלפון */
+    /* 5. רווחים מותאמים לטלפון */
     .block-container {
         padding-top: 2rem;
         padding-bottom: 5rem;
@@ -43,7 +52,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- משתנים ---
-# הלינק שלך (וודא שהוא נכון!)
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 
 # --- כותרת ראשית ---
@@ -56,8 +64,10 @@ tab1, tab2 = st.tabs(["📝 פתיחת תקלה", "✅ סגירה (טופל)"])
 with tab1:
     st.markdown("##### 📌 דיווח חדש")
     with st.form("open_ticket_form", clear_on_submit=True):
-        # שינוי: תיבת טקסט רגילה במקום מספרים עם פלוס/מינוס
-        room_number = st.text_input("מספר חדר")
+        
+        # שינוי: חזרנו ל-number_input כדי לקבל מקלדת מספרים, אבל הסתרנו את הכפתורים ב-CSS
+        # step=1 מבטיח שאלו רק מספרים שלמים (INT)
+        room_number = st.number_input("מספר חדר", min_value=0, step=1, value=0)
         
         issue_type = st.selectbox(
             "מה הבעיה?",
@@ -70,8 +80,8 @@ with tab1:
         submit_open = st.form_submit_button("שלח דיווח 🚀")
         
         if submit_open:
-            if not room_number:
-                st.error("⚠️ חובה להזין מספר חדר")
+            if room_number == 0:
+                st.error("⚠️ חובה להזין מספר חדר תקין")
             else:
                 data = {"פעולה": "פתח", "מספר חדר": room_number, "סוג תקלה": issue_type, "הערות": notes}
                 try:
@@ -87,14 +97,15 @@ with tab1:
 with tab2:
     st.markdown("##### ✅ סגירת קריאה")
     with st.form("close_ticket_form", clear_on_submit=True):
-        # שינוי: תיבת טקסט רגילה
-        close_room = st.text_input("איזה חדר טופל?", key="close_room")
+        
+        # גם כאן: רק מספרים
+        close_room = st.number_input("איזה חדר טופל?", min_value=0, step=1, key="close_room", value=0)
         
         st.write("")
         submit_close = st.form_submit_button("עדכן שטופל 👍")
         
         if submit_close:
-            if not close_room:
+            if close_room == 0:
                 st.error("⚠️ איזה חדר?")
             else:
                 data = {"פעולה": "סגור", "מספר חדר": close_room, "סוג תקלה": "סגירה", "הערות": ""}
@@ -119,9 +130,7 @@ st.markdown("<h4 style='text-align: center; margin-bottom: 10px;'>📞 יציר�
 col1, col2 = st.columns(2)
 
 with col1:
-    # כאן עודכן המספר שלך
     st.link_button("חייג 📞", "tel:+972546258744", use_container_width=True)
 
 with col2:
-    # כאן עודכן המספר שלך
     st.link_button("וואטסאפ 💬", "https://wa.me/972546258744", use_container_width=True)
