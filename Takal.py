@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import base64
 
 # --- הגדרת עמוד ---
 st.set_page_config(page_title="ניהול תקלות", page_icon="🍏", layout="centered", initial_sidebar_state="collapsed")
@@ -17,7 +18,7 @@ st.markdown("""
         text-align: right;
     }
 
-    /* 3. העלמה של כפתורי הפלוס והמינוס (כדי שזה ייראה נקי) */
+    /* 3. העלמה של כפתורי הפלוס והמינוס */
     [data-testid="stNumberInputStepDown"],
     [data-testid="stNumberInputStepUp"] {
         display: none !important;
@@ -49,6 +50,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- משתנים ---
+# וודא שזו הכתובת של הסקריפט המעודכן (V6) שתומך בתמונות!
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 
 # --- כותרת ---
@@ -62,8 +64,6 @@ with tab1:
     st.markdown("##### 📌 דיווח חדש")
     with st.form("open_ticket_form", clear_on_submit=True):
         
-        # השינוי הגדול: value=None משאיר את השדה ריק!
-        # step=1 מבטיח מספרים שלמים ומקלדת מספרים
         room_number = st.number_input("מספר חדר", min_value=0, step=1, value=None, placeholder="הקלד מספר חדר...")
         
         issue_type = st.selectbox(
@@ -73,30 +73,49 @@ with tab1:
         
         notes = st.text_area("הערות (לא חובה)")
         
+        # --- תוספת: מצלמה ---
+        photo = st.camera_input("צלם תמונה (אופציונלי)")
+        
         st.write("")
         submit_open = st.form_submit_button("שלח דיווח 🚀")
         
         if submit_open:
-            # בדיקה אם השדה ריק (None)
             if room_number is None:
                 st.error("⚠️ חובה להזין מספר חדר")
             else:
-                data = {"פעולה": "פתח", "מספר חדר": room_number, "סוג תקלה": issue_type, "הערות": notes}
+                # עיבוד התמונה ל-Base64
+                image_base64 = ""
+                if photo:
+                    bytes_data = photo.getvalue()
+                    image_base64 = base64.b64encode(bytes_data).decode('utf-8')
+
+                # הכנת המידע לשליחה
+                data = {
+                    "פעולה": "פתח",
+                    "מספר חדר": room_number,
+                    "סוג תקלה": issue_type,
+                    "הערות": notes,
+                    "image_base64": image_base64 # שולח את התמונה המוצפנת
+                }
+                
                 try:
-                    with st.spinner('שולח...'):
-                        res = requests.post(URL, params=data)
+                    with st.spinner('שולח דיווח ותמונה...'):
+                        # שינוי חשוב: משתמשים ב-data=data ולא params=data כדי לתמוך במידע כבד (תמונה)
+                        res = requests.post(URL, data=data)
+                    
                     if res.status_code == 200:
                         st.balloons()
                         st.success("נשלח בהצלחה! רומן בדרך.")
-                except:
-                    st.error("שגיאת תקשורת")
+                    else:
+                        st.error(f"שגיאה: {res.status_code}")
+                except Exception as e:
+                    st.error(f"שגיאת תקשורת: {e}")
 
 # === טאב 2: סגירת תקלה ===
 with tab2:
     st.markdown("##### ✅ סגירת קריאה")
     with st.form("close_ticket_form", clear_on_submit=True):
         
-        # גם כאן: מתחיל ריק (None)
         close_room = st.number_input("איזה חדר טופל?", min_value=0, step=1, value=None, placeholder="הקלד מספר חדר...", key="close_room")
         
         st.write("")
@@ -109,7 +128,7 @@ with tab2:
                 data = {"פעולה": "סגור", "מספר חדר": close_room, "סוג תקלה": "סגירה", "הערות": ""}
                 try:
                     with st.spinner('מעדכן...'):
-                        res = requests.post(URL, params=data)
+                        res = requests.post(URL, data=data) # שיניתי גם פה ל-data ליתר ביטחון
                         response_data = res.json()
                     
                     if response_data.get('result') == 'success':
