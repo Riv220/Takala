@@ -5,7 +5,7 @@ import base64
 # --- הגדרת עמוד ---
 st.set_page_config(page_title="מוקד טכני", page_icon="💻", layout="centered", initial_sidebar_state="collapsed")
 
-# --- עיצוב מותאם (CSS) - הגרסה האגרסיבית ---
+# --- עיצוב מותאם (CSS) ---
 st.markdown("""
     <style>
     /* 1. הסתרת תפריטים */
@@ -71,8 +71,8 @@ st.markdown("""
 # --- כתובת הסקריפט (V6) ---
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 
-# --- כותרת ---
-st.markdown("<h1 style='text-align: center; color: #333; margin-bottom: 20px;'>💻 דיווח תקלה טכנית</h1>", unsafe_allow_html=True)
+# --- כותרת בצבע ירוק ---
+st.markdown("<h1 style='text-align: center; color: #28a745; margin-bottom: 20px;'>💻 דיווח תקלה טכנית</h1>", unsafe_allow_html=True)
 
 # --- טאבים ---
 tab1, tab2 = st.tabs(["🔧 פתיחת קריאה", "✅ סגירה"])
@@ -109,8 +109,7 @@ with tab1:
         
         st.write("")
         
-        # --- התיקון: שימוש ב-use_container_width=True ---
-        # זה הפתרון הרשמי של Streamlit לרוחב מלא
+        # --- כפתור שליחה לרוחב מלא ---
         submit_open = st.form_submit_button("פתח קריאה טכנית 🚀", use_container_width=True)
         
         if submit_open:
@@ -150,7 +149,6 @@ with tab2:
     
     st.write("")
     
-    # גם כאן הוספתי use_container_width=True ליתר ביטחון
     if st.button("סגור קריאה 👍", use_container_width=True):
         if close_room is None:
             st.error("⚠️ איזה חדר?")
