@@ -18,24 +18,24 @@ st.markdown("""
         text-align: right;
     }
 
-    /* 3. העלמה של כפתורי הפלוס והמינוס */
+    /* 3. העלמה של כפתורי הפלוס והמינוס במספרים */
     [data-testid="stNumberInputStepDown"],
     [data-testid="stNumberInputStepUp"] {
         display: none !important;
     }
     
-    /* 4. עיצוב כפתור שליחה - ענק וברור */
+    /* 4. עיצוב כפתור שליחה */
     [data-testid="stFormSubmitButton"] > button {
-        background-color: #007bff; /* כחול טכני */
+        background-color: #007bff;
         color: white;
         border-radius: 12px;
         border: none;
-        padding: 20px 0px;
-        font-size: 26px !important;
+        padding: 15px 0px;
+        font-size: 22px !important;
         font-weight: bold;
         width: 100%;
         box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
-        margin-top: 15px;
+        margin-top: 10px;
     }
     
     /* אפקט לחיצה */
@@ -44,12 +44,11 @@ st.markdown("""
         transform: scale(0.98);
     }
     
-    /* 5. עיצוב האקורדיון של המצלמה */
-    .streamlit-expanderHeader {
+    /* 5. עיצוב תיבת הסימון (Checkbox) שתיראה גדולה */
+    div[data-testid="stCheckbox"] label {
+        font-size: 18px;
         font-weight: bold;
         color: #333;
-        background-color: #e9ecef;
-        border-radius: 8px;
     }
 
     .block-container {
@@ -59,7 +58,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- כתובת הסקריפט שלך (V6) ---
+# --- כתובת הסקריפט (V6) ---
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 
 # --- כותרת ---
@@ -73,32 +72,36 @@ with tab1:
     with st.form("open_ticket_form", clear_on_submit=True):
         
         col1, col2 = st.columns([1, 2])
+        
         with col1:
-             room_number = st.number_input("חדר", min_value=0, step=1, value=None, placeholder="מספר...")
+             room_number = st.number_input("חדר", min_value=0, step=1, value=None, placeholder="מספר")
+        
         with col2:
-             # רשימה טכנית בלבד
              issue_type = st.selectbox(
                 "מהות התקלה",
                 [
-                    "מחשב לא עולה / תקוע",
-                    "מקרן / מסך",
-                    "בעיית רשת / אינטרנט",
+                    "מקרן (תקלה / שלט)",
+                    "מסך (גלילה / טלוויזיה)",
+                    "כבל HDMI (חסר / תקול)",
+                    "רמקולים / סאונד",
+                    "מחשב תקוע / לא עולה",
+                    "אינטרנט / רשת",
                     "מדפסת / סורק",
-                    "ציוד היקפי (מקלדת/עכבר)",
-                    "כבלים וחיבורים",
-                    "תוכנה / סיסמאות",
                     "אחר"
                 ]
             )
         
-        # שורה קצרה במקום בלוק גדול
-        notes = st.text_input("הערה קצרה (אופציונלי)", placeholder="לדוגמה: המחשב של המרצה")
+        notes = st.text_area("הערות נוספות", height=100)
         
         st.write("") 
         
-        # --- מצלמה בתוך אקורדיון ---
-        with st.expander("📷  צרף תמונה (לחץ כאן)"):
-            photo = st.camera_input("צלם")
+        # --- השינוי: מתג הפעלה למצלמה ---
+        # רק אם המשתמש מסמן את התיבה, הקוד של המצלמה נטען
+        photo = None
+        use_camera = st.checkbox("📷  לחץ כאן כדי להפעיל מצלמה")
+        
+        if use_camera:
+            photo = st.camera_input("צלם תמונה")
         
         st.write("")
         
@@ -110,6 +113,7 @@ with tab1:
                 st.error("⚠️ חובה להזין מספר חדר")
             else:
                 image_base64 = ""
+                # בודק אם צולמה תמונה (רק אם המצלמה הופעלה)
                 if photo:
                     bytes_data = photo.getvalue()
                     image_base64 = base64.b64encode(bytes_data).decode('utf-8')
