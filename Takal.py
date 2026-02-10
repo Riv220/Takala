@@ -24,46 +24,57 @@ st.markdown("""
         display: none !important;
     }
     
-    /* 4. עיצוב כפתורים ירוקים */
-    div.stButton > button {
+    /* 4. עיצוב כפתור שליחה - גדול ובולט! */
+    [data-testid="stFormSubmitButton"] > button {
         background-color: #28a745;
         color: white;
-        border-radius: 12px;
+        border-radius: 15px;
         border: none;
-        padding: 10px 0px;
-        font-size: 18px;
+        padding: 15px 0px; /* גובה הכפתור */
+        font-size: 24px !important; /* גודל טקסט ענק */
         font-weight: bold;
         width: 100%;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.3);
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+        margin-top: 10px;
     }
-    div.stButton > button:hover {
-        background-color: #218838;
-        color: white;
+    
+    /* אפקט לחיצה */
+    [data-testid="stFormSubmitButton"] > button:active {
+        background-color: #1e7e34;
+        transform: scale(0.98);
+    }
+    
+    /* 5. עיצוב האקספנדר (איפה שהמצלמה) */
+    .streamlit-expanderHeader {
+        font-weight: bold;
+        color: #555;
+        background-color: #f0f2f6;
+        border-radius: 10px;
     }
 
-    /* 5. ריווח */
+    /* 6. ריווח כללי */
     .block-container {
-        padding-top: 2rem;
+        padding-top: 1rem;
         padding-bottom: 5rem;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # --- משתנים ---
-# וודא שזו הכתובת של הסקריפט המעודכן (V6) שתומך בתמונות!
+# וודא שזו הכתובת של הסקריפט המעודכן (V6)
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 
 # --- כותרת ---
-st.markdown("<h1 style='text-align: center; color: #28a745;'>מערכת ניהול תקלות 🍏</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #28a745;'>🍏 מערכת תקלות</h1>", unsafe_allow_html=True)
 
 # --- טאבים ---
-tab1, tab2 = st.tabs(["📝 פתיחת תקלה", "✅ סגירה (טופל)"])
+tab1, tab2 = st.tabs(["📝 פתיחת תקלה", "✅ סגירה"])
 
 # === טאב 1: פתיחת תקלה ===
 with tab1:
-    st.markdown("##### 📌 דיווח חדש")
     with st.form("open_ticket_form", clear_on_submit=True):
         
+        st.markdown("### פרטי הדיווח")
         room_number = st.number_input("מספר חדר", min_value=0, step=1, value=None, placeholder="הקלד מספר חדר...")
         
         issue_type = st.selectbox(
@@ -73,8 +84,12 @@ with tab1:
         
         notes = st.text_area("הערות (לא חובה)")
         
-        # --- תוספת: מצלמה ---
-        photo = st.camera_input("צלם תמונה (אופציונלי)")
+        st.write("") # רווח קטן
+        
+        # --- השינוי הגדול: מצלמה בתוך "מגירה" ---
+        with st.expander("📸 הוסף תמונה (לחץ לפתיחה)"):
+            st.info("אם המצלמה הפוכה, לחץ על האייקון הקטן בפינה להחלפה")
+            photo = st.camera_input("צלם עכשיו")
         
         st.write("")
         submit_open = st.form_submit_button("שלח דיווח 🚀")
@@ -83,29 +98,27 @@ with tab1:
             if room_number is None:
                 st.error("⚠️ חובה להזין מספר חדר")
             else:
-                # עיבוד התמונה ל-Base64
                 image_base64 = ""
                 if photo:
+                    # המרה מהירה של התמונה לטקסט
                     bytes_data = photo.getvalue()
                     image_base64 = base64.b64encode(bytes_data).decode('utf-8')
 
-                # הכנת המידע לשליחה
                 data = {
                     "פעולה": "פתח",
                     "מספר חדר": room_number,
                     "סוג תקלה": issue_type,
                     "הערות": notes,
-                    "image_base64": image_base64 # שולח את התמונה המוצפנת
+                    "image_base64": image_base64
                 }
                 
                 try:
-                    with st.spinner('שולח דיווח ותמונה...'):
-                        # שינוי חשוב: משתמשים ב-data=data ולא params=data כדי לתמוך במידע כבד (תמונה)
-                        res = requests.post(URL, data=data)
+                    with st.spinner('שולח דיווח...'):
+                        res = requests.post(URL, data=data) # שימוש ב-data לתמיכה בתמונות
                     
                     if res.status_code == 200:
                         st.balloons()
-                        st.success("נשלח בהצלחה! רומן בדרך.")
+                        st.success("✅ הדיווח נשלח בהצלחה!")
                     else:
                         st.error(f"שגיאה: {res.status_code}")
                 except Exception as e:
@@ -113,7 +126,7 @@ with tab1:
 
 # === טאב 2: סגירת תקלה ===
 with tab2:
-    st.markdown("##### ✅ סגירת קריאה")
+    st.markdown("### סגירת קריאה")
     with st.form("close_ticket_form", clear_on_submit=True):
         
         close_room = st.number_input("איזה חדר טופל?", min_value=0, step=1, value=None, placeholder="הקלד מספר חדר...", key="close_room")
@@ -128,7 +141,7 @@ with tab2:
                 data = {"פעולה": "סגור", "מספר חדר": close_room, "סוג תקלה": "סגירה", "הערות": ""}
                 try:
                     with st.spinner('מעדכן...'):
-                        res = requests.post(URL, data=data) # שיניתי גם פה ל-data ליתר ביטחון
+                        res = requests.post(URL, data=data)
                         response_data = res.json()
                     
                     if response_data.get('result') == 'success':
@@ -142,9 +155,8 @@ with tab2:
 st.divider()
 
 # --- כפתורי קשר ---
-st.markdown("<h4 style='text-align: center; margin-bottom: 10px;'>📞 יצירת קשר מהיר</h4>", unsafe_allow_html=True)
 col1, col2 = st.columns(2)
 with col1:
-    st.link_button("חייג 📞", "tel:+972546258744", use_container_width=True)
+    st.link_button("📞 חייג", "tel:+972546258744", use_container_width=True)
 with col2:
-    st.link_button("וואטסאפ 💬", "https://wa.me/972546258744", use_container_width=True)
+    st.link_button("💬 וואטסאפ", "https://wa.me/972546258744", use_container_width=True)
