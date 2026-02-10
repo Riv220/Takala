@@ -5,7 +5,7 @@ import base64
 # --- הגדרת עמוד ---
 st.set_page_config(page_title="מוקד טכני", page_icon="💻", layout="centered", initial_sidebar_state="collapsed")
 
-# --- עיצוב מותאם (CSS) ---
+# --- עיצוב מותאם (CSS) - הגרסה האגרסיבית ---
 st.markdown("""
     <style>
     /* 1. הסתרת תפריטים */
@@ -24,39 +24,32 @@ st.markdown("""
         display: none !important;
     }
     
-    /* 4. עיצוב כפתור שליחה ראשי (בתוך הטופס) - התיקון הגדול! */
-    [data-testid="stFormSubmitButton"] {
-        display: flex;
-        width: 100%;
-    }
-    
-    [data-testid="stFormSubmitButton"] > button {
-        background-color: #007bff; /* כחול טכני חזק */
-        color: white;
-        border-radius: 12px;
-        border: none;
-        padding: 15px 0px; /* גובה */
-        font-size: 22px !important;
-        font-weight: bold;
-        width: 100%; /* רוחב מלא! */
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
-        margin-top: 10px;
-        transition: 0.2s;
+    /* 4. עיצוב כפתור שליחה - דריסה מוחלטת של העיצוב המקורי */
+    [data-testid="stFormSubmitButton"] button {
+        background-color: #007bff !important; /* כחול */
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 20px 0px !important; /* גובה הכפתור */
+        font-size: 24px !important; /* גודל טקסט */
+        font-weight: bold !important;
+        width: 100% !important; /* רוחב מלא */
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.2) !important;
     }
     
     /* אפקט לחיצה */
-    [data-testid="stFormSubmitButton"] > button:active {
-        background-color: #0056b3;
-        transform: scale(0.98);
+    [data-testid="stFormSubmitButton"] button:active {
+        background-color: #0056b3 !important;
+        transform: scale(0.98) !important;
     }
     
-    /* עיצוב כפתורים רגילים (לסגירה) */
+    /* כפתורים רגילים (סגירה) */
     div.stButton > button {
-        width: 100%;
-        border-radius: 12px;
-        font-size: 20px;
-        font-weight: bold;
-        padding: 15px 0;
+        width: 100% !important;
+        border-radius: 12px !important;
+        padding: 15px 0 !important;
+        font-size: 20px !important;
+        font-weight: bold !important;
     }
 
     /* 5. עיצוב אזור העלאת קובץ */
@@ -86,7 +79,6 @@ tab1, tab2 = st.tabs(["🔧 פתיחת קריאה", "✅ סגירה"])
 
 # === טאב 1: פתיחת תקלה ===
 with tab1:
-    # הטופס עצמו
     with st.form("open_ticket_form", clear_on_submit=True):
         
         col1, col2 = st.columns([1, 2])
@@ -113,14 +105,13 @@ with tab1:
         
         st.write("") 
         
-        # כפתור העלאה נקי
         photo = st.file_uploader("📷 צרף תמונה (אופציונלי)", type=['png', 'jpg', 'jpeg'])
         
         st.write("")
         
-        # --- הכפתור המתוקן ---
-        # שים לב: בתוך st.form משתמשים ב-form_submit_button
-        submit_open = st.form_submit_button("פתח קריאה טכנית 🚀")
+        # --- התיקון: שימוש ב-use_container_width=True ---
+        # זה הפתרון הרשמי של Streamlit לרוחב מלא
+        submit_open = st.form_submit_button("פתח קריאה טכנית 🚀", use_container_width=True)
         
         if submit_open:
             if room_number is None:
@@ -159,7 +150,8 @@ with tab2:
     
     st.write("")
     
-    if st.button("סגור קריאה 👍"):
+    # גם כאן הוספתי use_container_width=True ליתר ביטחון
+    if st.button("סגור קריאה 👍", use_container_width=True):
         if close_room is None:
             st.error("⚠️ איזה חדר?")
         else:
