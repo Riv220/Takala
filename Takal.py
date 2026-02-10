@@ -25,7 +25,7 @@ st.markdown("""
     }
     
     /* 4. עיצוב כפתור שליחה */
-    [data-testid="stFormSubmitButton"] > button {
+    div.stButton > button:first-child {
         background-color: #007bff;
         color: white;
         border-radius: 12px;
@@ -39,16 +39,16 @@ st.markdown("""
     }
     
     /* אפקט לחיצה */
-    [data-testid="stFormSubmitButton"] > button:active {
+    div.stButton > button:first-child:active {
         background-color: #0056b3;
         transform: scale(0.98);
     }
-    
-    /* 5. עיצוב תיבת הסימון (Checkbox) שתיראה גדולה */
-    div[data-testid="stCheckbox"] label {
-        font-size: 18px;
-        font-weight: bold;
-        color: #333;
+
+    /* 5. עיצוב אזור העלאת קובץ שיראה נקי */
+    [data-testid="stFileUploader"] section {
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
     }
 
     .block-container {
@@ -69,102 +69,92 @@ tab1, tab2 = st.tabs(["🔧 פתיחת קריאה", "✅ סגירה"])
 
 # === טאב 1: פתיחת תקלה ===
 with tab1:
-    with st.form("open_ticket_form", clear_on_submit=True):
-        
-        col1, col2 = st.columns([1, 2])
-        
-        with col1:
-             room_number = st.number_input("חדר", min_value=0, step=1, value=None, placeholder="מספר")
-        
-        with col2:
-             issue_type = st.selectbox(
-                "מהות התקלה",
-                [
-                    "מקרן (תקלה / שלט)",
-                    "מסך (גלילה / טלוויזיה)",
-                    "כבל HDMI (חסר / תקול)",
-                    "רמקולים / סאונד",
-                    "מחשב תקוע / לא עולה",
-                    "אינטרנט / רשת",
-                    "מדפסת / סורק",
-                    "אחר"
-                ]
-            )
-        
-        notes = st.text_area("הערות נוספות", height=100)
-        
-        st.write("") 
-        
-        # --- השינוי: מתג הפעלה למצלמה ---
-        # רק אם המשתמש מסמן את התיבה, הקוד של המצלמה נטען
-        photo = None
-        use_camera = st.checkbox("📷  לחץ כאן כדי להפעיל מצלמה")
-        
-        if use_camera:
-            photo = st.camera_input("צלם תמונה")
-        
-        st.write("")
-        
-        # --- כפתור שליחה ---
-        submit_open = st.form_submit_button("פתח קריאה טכנית 🚀")
-        
-        if submit_open:
-            if room_number is None:
-                st.error("⚠️ חובה להזין מספר חדר")
-            else:
-                image_base64 = ""
-                # בודק אם צולמה תמונה (רק אם המצלמה הופעלה)
-                if photo:
-                    bytes_data = photo.getvalue()
-                    image_base64 = base64.b64encode(bytes_data).decode('utf-8')
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+            room_number = st.number_input("חדר", min_value=0, step=1, value=None, placeholder="מספר")
+    
+    with col2:
+            issue_type = st.selectbox(
+            "מהות התקלה",
+            [
+                "מקרן (תקלה / שלט)",
+                "מסך (גלילה / טלוויזיה)",
+                "כבל HDMI (חסר / תקול)",
+                "רמקולים / סאונד",
+                "מחשב תקוע / לא עולה",
+                "אינטרנט / רשת",
+                "מדפסת / סורק",
+                "אחר"
+            ]
+        )
+    
+    notes = st.text_area("הערות נוספות", height=100)
+    
+    st.write("") 
+    
+    # --- הפתרון הכי טוב: העלאת קובץ ---
+    # בטלפון זה יפתח תפריט: "צלם תמונה" או "בחר מהגלריה"
+    photo = st.file_uploader("📷 צרף תמונה (מהגלריה או צלם)", type=['png', 'jpg', 'jpeg'])
+    
+    st.write("")
+    
+    # --- כפתור שליחה ---
+    if st.button("פתח קריאה טכנית 🚀"):
+        if room_number is None:
+            st.error("⚠️ חובה להזין מספר חדר")
+        else:
+            image_base64 = ""
+            if photo:
+                bytes_data = photo.getvalue()
+                image_base64 = base64.b64encode(bytes_data).decode('utf-8')
 
-                data = {
-                    "פעולה": "פתח",
-                    "מספר חדר": room_number,
-                    "סוג תקלה": issue_type,
-                    "הערות": notes,
-                    "image_base64": image_base64
-                }
+            data = {
+                "פעולה": "פתח",
+                "מספר חדר": room_number,
+                "סוג תקלה": issue_type,
+                "הערות": notes,
+                "image_base64": image_base64
+            }
+            
+            try:
+                with st.spinner('שולח...'):
+                    res = requests.post(URL, data=data)
                 
-                try:
-                    with st.spinner('שולח...'):
-                        res = requests.post(URL, data=data)
-                    
-                    if res.status_code == 200:
-                        st.balloons()
-                        st.success("✅ הקריאה נפתחה!")
-                    else:
-                        st.error(f"שגיאה: {res.status_code}")
-                except Exception as e:
-                    st.error(f"שגיאת תקשורת: {e}")
+                if res.status_code == 200:
+                    st.balloons()
+                    st.success("✅ הקריאה נפתחה!")
+                else:
+                    st.error(f"שגיאה: {res.status_code}")
+            except Exception as e:
+                st.error(f"שגיאת תקשורת: {e}")
 
 # === טאב 2: סגירת תקלה ===
 with tab2:
     st.markdown("### סגירת טיפול")
-    with st.form("close_ticket_form", clear_on_submit=True):
-        
-        close_room = st.number_input("מספר חדר", min_value=0, step=1, value=None, placeholder="הקלד מספר חדר...", key="close_room")
-        
-        st.write("")
-        submit_close = st.form_submit_button("סגור קריאה 👍")
-        
-        if submit_close:
-            if close_room is None:
-                st.error("⚠️ איזה חדר?")
-            else:
-                data = {"פעולה": "סגור", "מספר חדר": close_room, "סוג תקלה": "סגירה", "הערות": ""}
-                try:
-                    with st.spinner('מעדכן...'):
-                        res = requests.post(URL, data=data)
-                        response_data = res.json()
-                    
-                    if response_data.get('result') == 'success':
-                        st.success(f"חדר {close_room}: {response_data.get('message')}")
-                        st.balloons()
-                    else:
-                        st.warning("לא נמצאה קריאה פתוחה בחדר הזה.")
-                except:
-                    st.error("שגיאת תקשורת")
+    
+    close_room = st.number_input("מספר חדר", min_value=0, step=1, value=None, placeholder="הקלד מספר חדר...", key="close_room")
+    
+    st.write("")
+    
+    if st.button("סגור קריאה 👍"):
+        if close_room is None:
+            st.error("⚠️ איזה חדר?")
+        else:
+            data = {"פעולה": "סגור", "מספר חדר": close_room, "סוג תקלה": "סגירה", "הערות": ""}
+            try:
+                with st.spinner('מעדכן...'):
+                    res = requests.post(URL, data=data)
+                    response_data = res.json()
+                
+                if response_data.get('result') == 'success':
+                    st.success(f"חדר {close_room}: {response_data.get('message')}")
+                    st.balloons()
+                else:
+                    st.warning("לא נמצאה קריאה פתוחה בחדר הזה.")
+            except:
+                st.error("שגיאת תקשורת")
 
 st.divider()
 
