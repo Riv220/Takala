@@ -24,33 +24,37 @@ st.markdown("""
         display: none !important;
     }
     
-    /* 4. עיצוב כפתור שליחה */
-    div.stButton > button:first-child {
-        background-color: #007bff;
+    /* 4. עיצוב כפתורי הפעולה (פתח/סגור קריאה) */
+    div.stButton > button {
+        background-color: #007bff; /* כחול ראשי */
         color: white;
-        border-radius: 12px;
+        border-radius: 15px;
         border: none;
-        padding: 15px 0px;
-        font-size: 22px !important;
+        padding: 20px 0px; /* גובה הכפתור */
+        font-size: 24px !important; /* גודל טקסט */
         font-weight: bold;
-        width: 100%;
-        box-shadow: 0px 4px 10px rgba(0,0,0,0.3);
-        margin-top: 10px;
+        width: 100%; /* רוחב מלא */
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.2);
+        margin-top: 20px;
+        transition: 0.3s;
     }
     
     /* אפקט לחיצה */
-    div.stButton > button:first-child:active {
-        background-color: #0056b3;
+    div.stButton > button:active {
         transform: scale(0.98);
+        background-color: #0056b3;
     }
 
-    /* 5. עיצוב אזור העלאת קובץ שיראה נקי */
+    /* 5. עיצוב אזור העלאת קובץ */
     [data-testid="stFileUploader"] section {
-        padding: 10px;
-        background-color: #f8f9fa;
-        border-radius: 10px;
+        padding: 15px;
+        background-color: #f1f3f5;
+        border-radius: 12px;
+        text-align: center;
+        border: 2px dashed #ced4da;
     }
 
+    /* ריווח כללי */
     .block-container {
         padding-top: 1rem;
         padding-bottom: 5rem;
@@ -62,7 +66,7 @@ st.markdown("""
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 
 # --- כותרת ---
-st.markdown("<h1 style='text-align: center; color: #007bff;'>💻 דיווח תקלה טכנית</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #333; margin-bottom: 20px;'>💻 דיווח תקלה טכנית</h1>", unsafe_allow_html=True)
 
 # --- טאבים ---
 tab1, tab2 = st.tabs(["🔧 פתיחת קריאה", "✅ סגירה"])
@@ -94,13 +98,12 @@ with tab1:
     
     st.write("") 
     
-    # --- הפתרון הכי טוב: העלאת קובץ ---
-    # בטלפון זה יפתח תפריט: "צלם תמונה" או "בחר מהגלריה"
-    photo = st.file_uploader("📷 צרף תמונה (מהגלריה או צלם)", type=['png', 'jpg', 'jpeg'])
+    # --- העלאת קובץ (הפתרון הנקי) ---
+    photo = st.file_uploader("📷 צרף תמונה (אופציונלי)", type=['png', 'jpg', 'jpeg'])
     
     st.write("")
     
-    # --- כפתור שליחה ---
+    # --- כפתור שליחה ענק ---
     if st.button("פתח קריאה טכנית 🚀"):
         if room_number is None:
             st.error("⚠️ חובה להזין מספר חדר")
@@ -119,12 +122,12 @@ with tab1:
             }
             
             try:
-                with st.spinner('שולח...'):
+                with st.spinner('שולח דיווח...'):
                     res = requests.post(URL, data=data)
                 
                 if res.status_code == 200:
                     st.balloons()
-                    st.success("✅ הקריאה נפתחה!")
+                    st.success("✅ הקריאה נפתחה בהצלחה!")
                 else:
                     st.error(f"שגיאה: {res.status_code}")
             except Exception as e:
@@ -132,7 +135,7 @@ with tab1:
 
 # === טאב 2: סגירת תקלה ===
 with tab2:
-    st.markdown("### סגירת טיפול")
+    st.markdown("### 🏁 סגירת טיפול")
     
     close_room = st.number_input("מספר חדר", min_value=0, step=1, value=None, placeholder="הקלד מספר חדר...", key="close_room")
     
@@ -158,8 +161,36 @@ with tab2:
 
 st.divider()
 
-col1, col2 = st.columns(2)
-with col1:
-    st.link_button("📞 חייג", "tel:+972546258744", use_container_width=True)
-with col2:
-    st.link_button("💬 וואטסאפ", "https://wa.me/972546258744", use_container_width=True)
+# --- כפתורי קשר מעוצבים (HTML) ---
+# זה נותן לנו שליטה מלאה על הצבעים (ירוק לוואטסאפ, כחול לטלפון)
+
+st.markdown("""
+<div style="display: flex; gap: 10px;">
+    <a href="tel:+972546258744" style="text-decoration: none; width: 100%;">
+        <div style="
+            background-color: #0d6efd; 
+            color: white; 
+            padding: 15px; 
+            border-radius: 12px; 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 18px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            📞 חייג
+        </div>
+    </a>
+    <a href="https://wa.me/972546258744" style="text-decoration: none; width: 100%;">
+        <div style="
+            background-color: #25D366; 
+            color: white; 
+            padding: 15px; 
+            border-radius: 12px; 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 18px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            💬 וואטסאפ
+        </div>
+    </a>
+</div>
+""", unsafe_allow_html=True)
