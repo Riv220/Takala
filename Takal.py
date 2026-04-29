@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import base64
+import threading # <-- הספריה החדשה שעושה את הקסם
 
 # --- הגדרת עמוד ---
 st.set_page_config(page_title="מוקד טכני", page_icon="💻", layout="centered", initial_sidebar_state="collapsed")
@@ -21,7 +22,6 @@ st.markdown("""
         display: none !important;
     }
     
-    /* התיקון לכפתור - מכריח אותו ואת העטיפה שלו להיות 100% */
     div[data-testid="stFormSubmitButton"], 
     div[data-testid="stFormSubmitButton"] > button {
         width: 100% !important;
@@ -69,8 +69,8 @@ st.markdown("""
 
 # --- פונקציה לשליחה לטלגרם ---
 def send_telegram_alert(room, issue, notes):
-    bot_token = "8658832858:AAHfW3hMpNF1VA-anxTUGpbPNod5funoCG4" # הטוקן שהרגע הבאת לי
-    chat_id = "6432576359" # ה-ID שלך
+    bot_token = "8658832858:AAHfW3hMpNF1VA-anxTUGpbPNod5funoCG4"
+    chat_id = "6432576359"
     
     message = f"🚨 קריאה טכנית חדשה!\n\n🚪 חדר: {room}\n🔧 תקלה: {issue}\n📝 הערות: {notes}"
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
@@ -83,7 +83,17 @@ def send_telegram_alert(room, issue, notes):
     try:
         requests.post(url, json=payload)
     except Exception as e:
-        st.error(f"שגיאה בטלגרם: {e}")
+        print(f"שגיאה בטלגרם: {e}")
+
+# --- פונקציה חדשה: פעולת הרקע ---
+# הפונקציה הזו רצה מאחורי הקלעים ולא מעכבת את המשתמש
+def background_sender(url, data, room, issue, notes):
+    try:
+        res = requests.post(url, data=data)
+        if res.status_code == 200:
+            send_telegram_alert(room, issue, notes)
+    except Exception as e:
+        print(f"שגיאת תקשורת ברקע: {e}")
 
 # --- כתובת הסקריפט (גוגל שיטס) ---
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
@@ -145,20 +155,13 @@ with tab1:
                     "image_base64": image_base64
                 }
                 
-                try:
-                    with st.spinner('שולח דיווח...'):
-                        res = requests.post(URL, data=data)
-                    
-                    if res.status_code == 200:
-                        # שולח התראה לטלגרם!
-                        send_telegram_alert(room_number, issue_type, notes)
-                        
-                        st.balloons()
-                        st.success("✅ הקריאה נפתחה בהצלחה!")
-                    else:
-                        st.error(f"שגיאה: {res.status_code}")
-                except Exception as e:
-                    st.error(f"שגיאת תקשורת: {e}")
+                # --- השינוי הגדול: מיד מראים הצלחה למשתמש ---
+                st.balloons()
+                st.success("✅ הקריאה הועברה לטיפול!")
+                
+                # --- וזורקים את השליחה האמיתית לרוץ ברקע ---
+                thread = threading.Thread(target=background_sender, args=(URL, data, room_number, issue_type, notes))
+                thread.start()
 
 # === טאב 2: סגירת תקלה ===
 with tab2:
