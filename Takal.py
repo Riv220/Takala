@@ -8,42 +8,42 @@ st.set_page_config(page_title="מוקד טכני", page_icon="💻", layout="cen
 # --- עיצוב מותאם (CSS) ---
 st.markdown("""
     <style>
-    /* 1. הסתרת תפריטים */
     [data-testid="stSidebar"] { display: none; }
     #MainMenu { visibility: hidden; }
     
-    /* 2. כיוון ימין-שמאל */
     .stApp {
         direction: rtl;
         text-align: right;
     }
 
-    /* 3. העלמה של כפתורי הפלוס והמינוס במספרים */
     [data-testid="stNumberInputStepDown"],
     [data-testid="stNumberInputStepUp"] {
         display: none !important;
     }
     
-    /* 4. עיצוב כפתור שליחה - דריסה מוחלטת של העיצוב המקורי */
-    [data-testid="stFormSubmitButton"] button {
-        background-color: #007bff !important; /* כחול */
+    /* התיקון לכפתור - מכריח אותו ואת העטיפה שלו להיות 100% */
+    div[data-testid="stFormSubmitButton"], 
+    div[data-testid="stFormSubmitButton"] > button {
+        width: 100% !important;
+        display: block !important;
+    }
+    
+    div[data-testid="stFormSubmitButton"] > button {
+        background-color: #007bff !important; 
         color: white !important;
         border: none !important;
         border-radius: 12px !important;
-        padding: 20px 0px !important; /* גובה הכפתור */
-        font-size: 24px !important; /* גודל טקסט */
+        padding: 15px 0px !important;
+        font-size: 24px !important;
         font-weight: bold !important;
-        width: 100% !important; /* רוחב מלא */
         box-shadow: 0px 4px 10px rgba(0,0,0,0.2) !important;
     }
     
-    /* אפקט לחיצה */
-    [data-testid="stFormSubmitButton"] button:active {
+    div[data-testid="stFormSubmitButton"] > button:active {
         background-color: #0056b3 !important;
         transform: scale(0.98) !important;
     }
     
-    /* כפתורים רגילים (סגירה) */
     div.stButton > button {
         width: 100% !important;
         border-radius: 12px !important;
@@ -52,7 +52,6 @@ st.markdown("""
         font-weight: bold !important;
     }
 
-    /* 5. עיצוב אזור העלאת קובץ */
     [data-testid="stFileUploader"] section {
         padding: 15px;
         background-color: #f8f9fa;
@@ -68,10 +67,28 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- כתובת הסקריפט (V6) ---
+# --- פונקציה לשליחה לטלגרם ---
+def send_telegram_alert(room, issue, notes):
+    bot_token = "8658832858:AAHfW3hMpNF1VA-anxTUGpbPNod5funoCG4" # הטוקן שהרגע הבאת לי
+    chat_id = "6432576359" # ה-ID שלך
+    
+    message = f"🚨 קריאה טכנית חדשה!\n\n🚪 חדר: {room}\n🔧 תקלה: {issue}\n📝 הערות: {notes}"
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    
+    payload = {
+        "chat_id": chat_id,
+        "text": message
+    }
+    
+    try:
+        requests.post(url, json=payload)
+    except Exception as e:
+        st.error(f"שגיאה בטלגרם: {e}")
+
+# --- כתובת הסקריפט (גוגל שיטס) ---
 URL = "https://script.google.com/macros/s/AKfycbxFNkmr5JbLmpikXCTpNnjS0XCQjcYI45dQhw4md11nqq48FlHmQBg2AcBidcSZ09LDdw/exec"
 
-# --- כותרת בצבע ירוק ---
+# --- כותרת ---
 st.markdown("<h1 style='text-align: center; color: #28a745; margin-bottom: 20px;'>💻 דיווח תקלה טכנית</h1>", unsafe_allow_html=True)
 
 # --- טאבים ---
@@ -109,7 +126,6 @@ with tab1:
         
         st.write("")
         
-        # --- כפתור שליחה לרוחב מלא ---
         submit_open = st.form_submit_button("פתח קריאה טכנית 🚀", use_container_width=True)
         
         if submit_open:
@@ -134,6 +150,9 @@ with tab1:
                         res = requests.post(URL, data=data)
                     
                     if res.status_code == 200:
+                        # שולח התראה לטלגרם!
+                        send_telegram_alert(room_number, issue_type, notes)
+                        
                         st.balloons()
                         st.success("✅ הקריאה נפתחה בהצלחה!")
                     else:
